@@ -1,5 +1,6 @@
 package pt.fraunhofer.openlbs;
 
+import pt.fraunhofer.openlbs.db.DBAdapter;
 import pt.fraunhofer.openlbs.zxing.CaptureActivity;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -20,6 +21,8 @@ public class MainActivity extends Activity {
 	private Button capture;
 	private int dialogs;
 	
+	private DBAdapter mDBAdapter;
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +39,9 @@ public class MainActivity extends Activity {
 		});
         
         dialogs = 0;
+        
+        mDBAdapter = new DBAdapter(getBaseContext());
+        mDBAdapter.open();
     }
 
 	@Override

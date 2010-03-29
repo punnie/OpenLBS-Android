@@ -1,0 +1,14 @@
+create table packages (
+  _id integer primary key autoincrement,
+  name varchar(256) not null,
+  version integer(11));
+  
+create table locations(
+  _id integer primary key autoincrement,
+  name varchar(256) not null,
+  coordinates varchar(256));
+  
+create table contents(
+  _id integer primary key autoincrement,
+  name varchar(256) not null,
+  path varchar(256) not null);
