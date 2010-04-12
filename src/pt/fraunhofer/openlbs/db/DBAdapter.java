@@ -23,11 +23,11 @@ public class DBAdapter {
      */
 
     private static final String DATABASE_NAME = "openlbs.sqlite3";
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 7;
     
     /**
      * Redo this crap. It'll be nicer to fetch the statements to
-     * the resources insted of writing them here.
+     * the resources instead of writing them here.
      * 
      * Besides that, memory and such.
      */
@@ -48,6 +48,7 @@ public class DBAdapter {
    		+ "_id integer primary key autoincrement,"
    		+ "name varchar(256) not null,"
    		+ "path varchar(256) not null,"
+   		+ "mimetype varchar(32) not null default 'text/plain',"
    		+ "location_id integer(11) not null);";
    	
 	private static final String DATABASE_UPDATE = 
@@ -77,8 +78,18 @@ public class DBAdapter {
         public static String ID = "_id";
         public static String NAME = "name";
         public static String PATH = "path";
+        public static String TYPE = "mimetype";
         public static String LOCATION_ID = "location_id";
-        public static String[] COLUMNS = { ID, NAME, PATH, LOCATION_ID };
+        public static String[] COLUMNS = { ID, NAME, PATH, TYPE, LOCATION_ID };
+    }
+    
+    public static final class JoinedLocation {
+    	public static String PACKAGE_ID = "package_id";
+    	public static String PACKAGE_NAME = "package_name";
+    	public static String LOCATION_ID = "location_id";
+    	public static String LOCATION_NAME = "location_name";
+    	public static String VERSION = "version";
+    	public static String COORDINATES = "coordinates";
     }
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
@@ -152,9 +163,28 @@ public class DBAdapter {
      * @return
      */
     
-    public Cursor fetchLocationByName(String locationName){
-    	Cursor mCursor = mDb.query(Location.TABLE_NAME, Location.COLUMNS,
-    			Location.NAME + "='" + locationName + "'", null, null, null, null);
+    public Cursor fetchLocationByName(String packageName, String locationName){
+    	
+    	/*
+    	 * I think the following actually works out as being worse than
+    	 * doing a dirty direct sql query..
+    	 * 
+    	 * Cursor mCursor = mDb.query(innerJoin(Location.TABLE_NAME, Package.TABLE_NAME, Location.PACKAGE_ID, Package.ID), 
+    	 *		new String[] {Package.ID, Package.NAME, Package.VERSION, Location.ID, Location.NAME, Location.COORDINATES}, 
+    	 *		Location.NAME + "='" + locationName + "' AND " + Package.NAME + "='" + packageName + "'", 
+    	 *		null, null, null, null);
+    	 *		
+    	 */
+    	
+    	Cursor mCursor = mDb.rawQuery("SELECT packages._id as package_id, "
+    			+ "packages.name as package_name, packages.version, "
+    			+ "locations._id as location_id, locations.name as location_name, "
+    			+ "locations.coordinates "
+    			+ "FROM locations INNER JOIN packages ON locations.package_id=packages._id "
+    			+ "WHERE locations.name=? AND packages.name=?", 
+    			new String[] {locationName, packageName});
+    	
+    	Log.v(TAG, "mCursor row count: " + mCursor.getCount());
     	
     	return mCursor;
     }
@@ -166,12 +196,24 @@ public class DBAdapter {
      * @return mCursor containing all the contents of a location
      */
     
-    public Cursor fetchContentsById(int locationId) {
+    public Cursor fetchContentsByLocationId(int locationId) {
     	Cursor mCursor = mDb.query(Content.TABLE_NAME, Content.COLUMNS, 
     			Content.LOCATION_ID + "='" + locationId + "'", null, null, null, null);
     	return mCursor;
     }
     
+    /**
+     * Returns a content selected by its id
+     * 
+     * @param contentId
+     * @return
+     */
+    
+    public Cursor fetchContentById(long contentId) {
+    	Cursor mCursor = mDb.query(Content.TABLE_NAME, Content.COLUMNS, 
+    			Content.ID + "='" + contentId + "'", null, null, null, null);
+    	return mCursor;
+    }
     
     /**
      * Down right fugly testing dummy data injection

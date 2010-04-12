@@ -6,9 +6,12 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
 
 public class LocationActivity extends Activity {
     private static final String TAG = "OpenLBS LocationActivity";
@@ -49,16 +52,29 @@ public class LocationActivity extends Activity {
 		
 	}
 	
+	/**
+	 * Validates a provided URI before sending it to be parsed.
+	 * 
+	 * @param result
+	 * @return
+	 */
+	
 	private boolean validateUri(Uri result) {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
+	
+	/**
+	 * Populates the LocationActivity with the values found on the 
+	 * database for that particular location.
+	 * 
+	 */
 
 	private void populateInfo(){
 		if(LOCATION_NAME == null)
 			return;
 		
-		Cursor lcursor = mDBAdapter.fetchLocationByName(LOCATION_NAME);
+		Cursor lcursor = mDBAdapter.fetchLocationByName(PACKAGE_NAME, LOCATION_NAME);
 		startManagingCursor(lcursor);
 		
 		Log.v(TAG, "Location fetched!");
@@ -68,40 +84,75 @@ public class LocationActivity extends Activity {
 			TextView packageName = (TextView) findViewById(R.id.packageName);
 			TextView locationCoordinates = (TextView) findViewById(R.id.locationCoordinates);
 			
-			Log.v(TAG, "_id key index: " + lcursor.getColumnIndex(DBAdapter.Location.ID));
-			Log.v(TAG, "name key index: " + lcursor.getColumnIndex(DBAdapter.Location.NAME));
-			Log.v(TAG, "coordinates key index: " + lcursor.getColumnIndex(DBAdapter.Location.COORDINATES));
-			Log.v(TAG, "package_id key index: " + lcursor.getColumnIndex(DBAdapter.Location.PACKAGE_ID));
+			String packageIdentifier = new String();
+			String coordinates = new String();
 			
-			LOCATION_ID = lcursor.getInt(lcursor.getColumnIndex(DBAdapter.Location.ID));
-			PACKAGE_ID = lcursor.getInt(lcursor.getColumnIndex(DBAdapter.Location.PACKAGE_ID));
+			/* 
+			 * Debug log garbage below.
+			 */
 			
-			if(PACKAGE_ID > 0){
-				Cursor pcursor = mDBAdapter.fetchPackageById(PACKAGE_ID);
-				startManagingCursor(pcursor);
-				
-				if(pcursor.moveToFirst()){
-					String packageIdentifier = pcursor.getString(pcursor.getColumnIndex(DBAdapter.Package.NAME));
-					packageIdentifier += ", version ";
-					packageIdentifier += pcursor.getString(pcursor.getColumnIndex(DBAdapter.Package.VERSION));
-					
-					packageName.setText(packageIdentifier);
-				}
-			}
+			Log.v(TAG, "package_id key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_ID));
+			Log.v(TAG, "package_name key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_NAME));
+			Log.v(TAG, "location_id key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_ID));
+			Log.v(TAG, "location_name key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_NAME));
+			Log.v(TAG, "coordinates key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.COORDINATES));
+			Log.v(TAG, "version key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.VERSION));
 			
-			locationName.setText(lcursor.getString(lcursor.getColumnIndex(DBAdapter.Location.NAME)));
+			/*
+			 * End of debug log garbage.
+			 */
 			
-			String coordinates = "coordinates: "; 
-			coordinates += lcursor.getString(lcursor.getColumnIndex(DBAdapter.Location.COORDINATES));
+			checkDbLookupIntegrity(lcursor);
+			
+			LOCATION_ID = lcursor.getInt(lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_ID));
+			PACKAGE_ID = lcursor.getInt(lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_ID));
+			
+			packageIdentifier = lcursor.getString(lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_NAME));
+			packageIdentifier += ", version ";
+			packageIdentifier += lcursor.getString(lcursor.getColumnIndex(DBAdapter.JoinedLocation.VERSION));
+			
+			packageName.setText(packageIdentifier);
+			locationName.setText(lcursor.getString(lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_NAME)));
+			
+			coordinates = "coordinates: "; 
+			coordinates += lcursor.getString(lcursor.getColumnIndex(DBAdapter.JoinedLocation.COORDINATES));
 			locationCoordinates.setText(coordinates);
 		}
 	}
+	
+	/**
+	 * Checks the integrity of the values found in the QRCode against
+	 * the values found on the DB.
+	 * 
+	 * TODO: actually throw some exceptions in case something goes bad.
+	 * 
+	 * @param lcursor
+	 */
+	
+	private void checkDbLookupIntegrity(Cursor lcursor){
+		if (!(LOCATION_NAME.equals(lcursor.getString(lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_NAME)))))
+			Log.e(TAG, "locationName on QRCode not the same as the one referenced in the DB.");
+		else
+			Log.v(TAG, "locationName on the QRCode seems coincident with the one in the DB.");
+		
+		if(!(PACKAGE_NAME.equals(lcursor.getString(lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_NAME)))))
+			Log.e(TAG, "packageName on QRCode not the same as the one referenced in the DB.");
+		else
+			Log.v(TAG, "packageName on the QRCode seems coincident with the one in the DB.");
+	}
+	
+	/**
+	 * Lists all the content a location provides.
+	 * 
+	 */
 	
 	private void listContent(){
 		if(LOCATION_ID == 0)
 			return;
 		
-		Cursor lcursor = mDBAdapter.fetchContentsById(LOCATION_ID);
+		Cursor lcursor = mDBAdapter.fetchContentsByLocationId(LOCATION_ID);
+		startManagingCursor(lcursor);
+		
 		String[] from = new String[] {DBAdapter.Content.NAME, DBAdapter.Content.PATH};
 		int[] to = new int[] {R.id.contentName, R.id.contentPath};
 		
@@ -109,5 +160,21 @@ public class LocationActivity extends Activity {
 		
 		ListView contentList = (ListView) findViewById(R.id.locationContents);
 		contentList.setAdapter(contents);
+		
+		contentList.setOnItemClickListener(new OnItemClickListener() {
+
+			public void onItemClick(AdapterView<?> l, View v, int position, long id) {
+				// TODO Auto-generated method stub
+				Cursor ccursor = mDBAdapter.fetchContentById(id);
+				startManagingCursor(ccursor);
+				
+				if(ccursor.moveToFirst() && (ccursor.getCount() == 1)){
+					Log.v(TAG, "Content " + id + " (" + ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.NAME)) 
+							+ ", " + ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.TYPE)) + ") clicked!");
+					Log.v(TAG, "Absolute path to data: " + getFilesDir().getAbsolutePath() + "/");
+				}
+			}
+			
+		});
 	}
 }
