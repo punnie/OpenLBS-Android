@@ -1,6 +1,11 @@
 package pt.fraunhofer.openlbs.db;
 
+import java.io.IOException;
+import java.io.InputStream;
+import pt.fraunhofer.openlbs.R;
+
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -18,7 +23,7 @@ public class DBAdapter {
      */
 
     private static final String DATABASE_NAME = "openlbs.sqlite3";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 5;
     
     /**
      * Redo this crap. It'll be nicer to fetch the statements to
@@ -34,13 +39,13 @@ public class DBAdapter {
    		+ "version integer(11));"
   
    		+ "create table locations("
-   		+ "id integer primary key autoincrement,"
+   		+ "_id integer primary key autoincrement,"
    		+ "name varchar(256) not null,"
    		+ "coordinates varchar(256),"
    		+ "package_id integer(11) not null);"
   
    		+ "create table contents("
-   		+ "id integer primary key autoincrement,"
+   		+ "_id integer primary key autoincrement,"
    		+ "name varchar(256) not null,"
    		+ "path varchar(256) not null,"
    		+ "location_id integer(11) not null);";
@@ -53,7 +58,7 @@ public class DBAdapter {
     public static final class Package {
     	public static String TABLE_NAME = "packages";
         public static String ID = "_id";
-        public static String NAME = "day";
+        public static String NAME = "name";
         public static String VERSION = "version";
         public static String[] COLUMNS = { ID, NAME, VERSION };
     }
@@ -122,11 +127,23 @@ public class DBAdapter {
     public DBAdapter open() throws SQLException {
         mDbHelper = new DatabaseHelper(mCtx);
         mDb = mDbHelper.getWritableDatabase();
+        
+        // TODO: remove when updating from remote
+        if(!databasePopulated())
+        	populateDummyData();
+        
         return this;
     }
     
     public void close() {
         mDbHelper.close();
+    }
+    
+    public Cursor fetchPackageById(int packageId){
+    	Cursor mCursor = mDb.query(Package.TABLE_NAME, Package.COLUMNS,
+    			Package.ID + "='" + packageId + "'", null, null, null, null);
+    	
+    	return mCursor;
     }
     
     /**
@@ -135,13 +152,9 @@ public class DBAdapter {
      * @return
      */
     
-    public Cursor fetchLocation(String locationName){
-    	Cursor mCursor = mDb.query(Location.TABLE_NAME, new String[] {Location.NAME, Location.COORDINATES},
-    			Location.NAME + "=" + locationName, null, null, null, null);
-    	
-    	if (mCursor != null) {
-            mCursor.moveToFirst();
-        }
+    public Cursor fetchLocationByName(String locationName){
+    	Cursor mCursor = mDb.query(Location.TABLE_NAME, Location.COLUMNS,
+    			Location.NAME + "='" + locationName + "'", null, null, null, null);
     	
     	return mCursor;
     }
@@ -153,22 +166,57 @@ public class DBAdapter {
      * @return mCursor containing all the contents of a location
      */
     
-    public Cursor fetchContents(String locationName) {
-    	Cursor mCursor = mDb.query(innerJoin(Content.TABLE_NAME, Location.TABLE_NAME, Content.LOCATION_ID, Location.ID), 
-    			new String[] {Content.NAME, Content.PATH}, Location.NAME + "=" + locationName, null, null, null, null);
+    public Cursor fetchContentsById(int locationId) {
+    	Cursor mCursor = mDb.query(Content.TABLE_NAME, Content.COLUMNS, 
+    			Content.LOCATION_ID + "='" + locationId + "'", null, null, null, null);
     	return mCursor;
     }
     
+    
     /**
-     * Returns an inner join string to feed the query method.
-     * 
-     * @param table1
-     * @param table2
-     * @param field1
-     * @param field2
-     * @return string with the inner join sql syntax
+     * Down right fugly testing dummy data injection
      */
-    private String innerJoin(String table1, String table2, String field1, String field2){
-    	return table1 + " INNER JOIN " + table2 + " ON " + table1 + "." + field1 + "=" + table2 + "." + field2; 
+    
+    // TODO: remove when updating from remote
+    
+    private String getFileContent(Resources resources, int rawId) throws IOException
+      {
+        InputStream is = resources.openRawResource(rawId);
+        int size = is.available();
+        // Read the entire asset into a local byte buffer.
+        byte[] buffer = new byte[size];
+        is.read(buffer);
+        is.close();
+        // Convert the buffer into a string.
+        return new String(buffer);
+      }
+    
+    private void populateDummyData(){
+    	String[] fixtures = null;
+    	
+		try {
+			fixtures = new String [] {getFileContent(this.mCtx.getResources(), R.raw.db_contents_fixtures),
+					getFileContent(this.mCtx.getResources(), R.raw.db_locations_fixtures),
+					getFileContent(this.mCtx.getResources(), R.raw.db_packages_fixtures)};
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if(fixtures == null)
+			return;
+    	
+    	for(int i = 0; i < fixtures.length; i++){
+    		for(String statement: fixtures[i].split(";"))
+    			mDb.execSQL(statement);
+    	}
+    }
+    
+    private boolean databasePopulated(){
+    	Cursor mCursor = mDb.query(Location.TABLE_NAME, 
+    			new String[] {Location.NAME, Location.COORDINATES},
+    			null, null, null, null, null);
+    	
+    	return mCursor.getCount() > 0;
     }
 }

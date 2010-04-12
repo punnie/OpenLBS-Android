@@ -1,12 +1,9 @@
 package pt.fraunhofer.openlbs;
 
-import pt.fraunhofer.openlbs.db.DBAdapter;
 import pt.fraunhofer.openlbs.zxing.CaptureActivity;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -19,9 +16,9 @@ public class MainActivity extends Activity {
 	private static final String TAG = "MainActivity";
 	private String result;
 	private Button capture;
-	private int dialogs;
+	private Uri identifier;
 	
-	private DBAdapter mDBAdapter;
+	public static final String BARCODE_RESULT = "BarcodeResult";
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -37,11 +34,6 @@ public class MainActivity extends Activity {
 				startActivityForResult(i, CAPTURED);
 				}
 		});
-        
-        dialogs = 0;
-        
-        mDBAdapter = new DBAdapter(getBaseContext());
-        mDBAdapter.open();
     }
 
 	@Override
@@ -51,25 +43,15 @@ public class MainActivity extends Activity {
 			result = bundle.getString("Result");
 			Log.v(TAG, "onActivityResult: value of result: " + result);
 			
-			showDialog(dialogs++);
+			Bundle extras = new Bundle();
+			extras.putString(MainActivity.BARCODE_RESULT, result);
+			
+			Intent intent = new Intent(getApplicationContext(), LocationActivity.class);
+			intent.putExtras(extras);
+			
+			startActivity(intent);
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
-	
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		Log.v(TAG, "onCreateDialog: value of result: " + result);
-		return new AlertDialog.Builder(this)
-		.setIcon(R.drawable.icon)
-		.setTitle(R.string.app_name)
-		.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-
-                    /* User clicked OK so do some stuff */
-                }
-            })
-		.setMessage(result)
-		.create();
-	}
-    
+	    
 }
