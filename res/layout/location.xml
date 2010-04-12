@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+<TextView android:id="@+id/locationName" 
+          android:layout_width="wrap_content" 
+          android:layout_height="wrap_content" 
+          android:textSize="36sp" 
+          android:text="undefined" />
+          
+<TextView android:id="@+id/packageName" 
+          android:layout_width="wrap_content" 
+          android:layout_height="wrap_content" 
+          android:textSize="12sp" 
+          android:text="undefined"  />
+          
+<TextView android:id="@+id/locationCoordinates" 
+          android:layout_width="wrap_content" 
+          android:layout_height="wrap_content" 
+          android:textSize="12sp"  
+          android:text="undefined" />
+          
+<ListView android:id="@+id/locationContents"
+          android:layout_width="wrap_content" 
+          android:layout_height="wrap_content" 
+          android:layout_marginTop="45dp"/>
+
+</LinearLayout>
