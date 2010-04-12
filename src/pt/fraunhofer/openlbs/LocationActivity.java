@@ -17,6 +17,7 @@ public class LocationActivity extends Activity {
     private static final String TAG = "OpenLBS LocationActivity";
     
 	private Uri result;
+	
 	private int PACKAGE_ID = 0;
 	private int LOCATION_ID = 0;
 	

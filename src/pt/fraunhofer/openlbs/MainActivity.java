@@ -3,7 +3,6 @@ package pt.fraunhofer.openlbs;
 import pt.fraunhofer.openlbs.zxing.CaptureActivity;
 import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,7 +15,6 @@ public class MainActivity extends Activity {
 	private static final String TAG = "MainActivity";
 	private String result;
 	private Button capture;
-	private Uri identifier;
 	
 	public static final String BARCODE_RESULT = "BarcodeResult";
 	

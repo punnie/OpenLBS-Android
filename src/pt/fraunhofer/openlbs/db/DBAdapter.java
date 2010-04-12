@@ -84,6 +84,9 @@ public class DBAdapter {
     }
     
     public static final class JoinedLocation {
+    	
+    	// No TABLE_NAME, as this abstracts a joined table.
+    	
     	public static String PACKAGE_ID = "package_id";
     	public static String PACKAGE_NAME = "package_name";
     	public static String LOCATION_ID = "location_id";
@@ -192,13 +195,14 @@ public class DBAdapter {
     /**
      * Returns the contents linked to a location.
      * 
-     * @param locationName
+     * @param locationId
      * @return mCursor containing all the contents of a location
      */
     
     public Cursor fetchContentsByLocationId(int locationId) {
     	Cursor mCursor = mDb.query(Content.TABLE_NAME, Content.COLUMNS, 
     			Content.LOCATION_ID + "='" + locationId + "'", null, null, null, null);
+    	
     	return mCursor;
     }
     
@@ -212,6 +216,7 @@ public class DBAdapter {
     public Cursor fetchContentById(long contentId) {
     	Cursor mCursor = mDb.query(Content.TABLE_NAME, Content.COLUMNS, 
     			Content.ID + "='" + contentId + "'", null, null, null, null);
+    	
     	return mCursor;
     }
     
