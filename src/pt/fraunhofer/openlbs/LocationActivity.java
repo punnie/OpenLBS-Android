@@ -16,15 +16,24 @@ import android.widget.AdapterView.OnItemClickListener;
 public class LocationActivity extends Activity {
     private static final String TAG = "OpenLBS LocationActivity";
     
+	private class Location {
+		public int _id;
+		public String coordinates;
+		public String name;
+	}
+	
+	private class Package {
+		public int _id;
+		public int version;
+		public String name;
+	}
+    
 	private Uri result;
 	
-	private int PACKAGE_ID = 0;
-	private int LOCATION_ID = 0;
-	
-	private String PACKAGE_NAME = null;
-	private String LOCATION_NAME = null;
-	
 	private DBAdapter mDBAdapter;
+	
+	private Location myLocation;
+	private Package myPackage;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -33,20 +42,29 @@ public class LocationActivity extends Activity {
 		
         mDBAdapter = new DBAdapter(getBaseContext());
         mDBAdapter.open();
+        
+        myLocation = new Location();
+        myPackage = new Package();
 		
 		// TODO: 0. validations
         if(!validateUri(result)){
         	// destroy activity and display a dialog saying it pooped
         }
-        	
-		result = Uri.parse(getIntent().getExtras().getString(MainActivity.BARCODE_RESULT));
 		
-		// TODO: 1. extract information from the Uri
-		this.PACKAGE_NAME = result.getAuthority();
-		this.LOCATION_NAME = result.getPath().split("/")[1];
+		try {
+			populateFields();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		// TODO: 2. fetch the location info from the database
-		populateInfo();
+		try {
+			populateInfo();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		// TODO: 3. list the location contents
 		listContent();
@@ -61,64 +79,84 @@ public class LocationActivity extends Activity {
 	 */
 	
 	private boolean validateUri(Uri result) {
-		// TODO Auto-generated method stub
+		// TODO: Actually validate the URI
 		return true;
+	}
+	
+	/**
+	 * Populates both the Location and Package fields.
+	 * 
+	 * @throws Exception
+	 */
+	
+	private void populateFields() throws Exception {
+		result = Uri.parse(getIntent().getExtras().getString(MainActivity.BARCODE_RESULT));
+		
+		myPackage.name = result.getAuthority();
+		myLocation.name = result.getPath().split("/")[1];
+		
+		if(myLocation.name == null || myPackage.name == null)
+			throw new Exception();
+		
+		Cursor lcursor = mDBAdapter.fetchLocationByName(myPackage.name, myLocation.name);
+		startManagingCursor(lcursor);
+		
+		Log.v(TAG, "Location fetched!");
+		
+		/* 
+		 * Debug log garbage below.
+		 */
+		
+		Log.v(TAG, "package_id key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_ID));
+		Log.v(TAG, "package_name key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_NAME));
+		Log.v(TAG, "location_id key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_ID));
+		Log.v(TAG, "location_name key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_NAME));
+		Log.v(TAG, "coordinates key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.COORDINATES));
+		Log.v(TAG, "version key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.VERSION));
+		
+		/*
+		 * End of debug log garbage.
+		 */
+		
+		if(lcursor.moveToFirst()){
+			checkDbLookupIntegrity(lcursor);
+			
+			myLocation._id = lcursor.getInt(lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_ID));
+			myLocation.coordinates = lcursor.getString(lcursor.getColumnIndex(DBAdapter.JoinedLocation.COORDINATES));
+			
+			myPackage._id = lcursor.getInt(lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_ID));
+			myPackage.version = lcursor.getInt(lcursor.getColumnIndex(DBAdapter.JoinedLocation.VERSION));
+			
+			// TODO: check if fields are correctly filled.
+		}
 	}
 	
 	/**
 	 * Populates the LocationActivity with the values found on the 
 	 * database for that particular location.
+	 * @throws Exception  
 	 * 
 	 */
 
-	private void populateInfo(){
-		if(LOCATION_NAME == null)
-			return;
+	private void populateInfo() throws Exception {
 		
-		Cursor lcursor = mDBAdapter.fetchLocationByName(PACKAGE_NAME, LOCATION_NAME);
-		startManagingCursor(lcursor);
+		if(myPackage == null || myLocation == null)
+			throw new Exception();
 		
-		Log.v(TAG, "Location fetched!");
+		TextView locationName = (TextView) findViewById(R.id.locationName);
+		TextView packageName = (TextView) findViewById(R.id.packageName);
+		TextView locationCoordinates = (TextView) findViewById(R.id.locationCoordinates);
 		
-		if(lcursor.moveToFirst()){
-			TextView locationName = (TextView) findViewById(R.id.locationName);
-			TextView packageName = (TextView) findViewById(R.id.packageName);
-			TextView locationCoordinates = (TextView) findViewById(R.id.locationCoordinates);
-			
-			String packageIdentifier = new String();
-			String coordinates = new String();
-			
-			/* 
-			 * Debug log garbage below.
-			 */
-			
-			Log.v(TAG, "package_id key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_ID));
-			Log.v(TAG, "package_name key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_NAME));
-			Log.v(TAG, "location_id key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_ID));
-			Log.v(TAG, "location_name key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_NAME));
-			Log.v(TAG, "coordinates key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.COORDINATES));
-			Log.v(TAG, "version key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.VERSION));
-			
-			/*
-			 * End of debug log garbage.
-			 */
-			
-			checkDbLookupIntegrity(lcursor);
-			
-			LOCATION_ID = lcursor.getInt(lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_ID));
-			PACKAGE_ID = lcursor.getInt(lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_ID));
-			
-			packageIdentifier = lcursor.getString(lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_NAME));
-			packageIdentifier += ", version ";
-			packageIdentifier += lcursor.getString(lcursor.getColumnIndex(DBAdapter.JoinedLocation.VERSION));
-			
-			packageName.setText(packageIdentifier);
-			locationName.setText(lcursor.getString(lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_NAME)));
-			
-			coordinates = "coordinates: "; 
-			coordinates += lcursor.getString(lcursor.getColumnIndex(DBAdapter.JoinedLocation.COORDINATES));
-			locationCoordinates.setText(coordinates);
-		}
+		String packageIdentifier = new String();
+		String coordinates = new String();
+		
+		packageIdentifier = myPackage.name + ", version " + myPackage.version;
+		
+		packageName.setText(packageIdentifier);
+		locationName.setText(myLocation.name);
+	
+		coordinates = "coordinates: " + myLocation.coordinates;
+		locationCoordinates.setText(coordinates);
 	}
 	
 	/**
@@ -131,12 +169,12 @@ public class LocationActivity extends Activity {
 	 */
 	
 	private void checkDbLookupIntegrity(Cursor lcursor){
-		if (!(LOCATION_NAME.equals(lcursor.getString(lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_NAME)))))
+		if (!(myLocation.name.equals(lcursor.getString(lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_NAME)))))
 			Log.e(TAG, "locationName on QRCode not the same as the one referenced in the DB.");
 		else
 			Log.v(TAG, "locationName on the QRCode seems coincident with the one in the DB.");
 		
-		if(!(PACKAGE_NAME.equals(lcursor.getString(lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_NAME)))))
+		if(!(myPackage.name.equals(lcursor.getString(lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_NAME)))))
 			Log.e(TAG, "packageName on QRCode not the same as the one referenced in the DB.");
 		else
 			Log.v(TAG, "packageName on the QRCode seems coincident with the one in the DB.");
@@ -148,10 +186,10 @@ public class LocationActivity extends Activity {
 	 */
 	
 	private void listContent(){
-		if(LOCATION_ID == 0)
+		if(myLocation._id == 0)
 			return;
 		
-		Cursor lcursor = mDBAdapter.fetchContentsByLocationId(LOCATION_ID);
+		Cursor lcursor = mDBAdapter.fetchContentsByLocationId(myLocation._id);
 		startManagingCursor(lcursor);
 		
 		String[] from = new String[] {DBAdapter.Content.NAME, DBAdapter.Content.PATH};
@@ -170,9 +208,14 @@ public class LocationActivity extends Activity {
 				startManagingCursor(ccursor);
 				
 				if(ccursor.moveToFirst() && (ccursor.getCount() == 1)){
-					Log.v(TAG, "Content " + id + " (" + ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.NAME)) 
+					/*
+					Log.v(TAG, "Content " + id + ", position " + position + " (" + ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.NAME)) 
 							+ ", " + ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.TYPE)) + ") clicked!");
-					Log.v(TAG, "Absolute path to data: " + getFilesDir().getAbsolutePath() + "/");
+					Log.v(TAG, "Absolute path to data: " + getFilesDir().getAbsolutePath() + "/" + myPackage.name + "/" + myLocation.name + "/" + ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.PATH)));
+					*/
+					
+					
+					
 				}
 			}
 			
