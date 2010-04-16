@@ -23,7 +23,7 @@ public class DBAdapter {
      */
 
     private static final String DATABASE_NAME = "openlbs.sqlite3";
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
     
     /**
      * Redo this crap. It'll be nicer to fetch the statements to
@@ -42,6 +42,7 @@ public class DBAdapter {
    		+ "_id integer primary key autoincrement,"
    		+ "name varchar(256) not null,"
    		+ "coordinates varchar(256),"
+   		+ "tags varchar(256),"
    		+ "package_id integer(11) not null);"
   
    		+ "create table contents("
@@ -69,8 +70,9 @@ public class DBAdapter {
         public static String ID = "_id";
         public static String NAME = "name";
         public static String COORDINATES = "coordinates";
+        public static String TAGS = "tags";
         public static String PACKAGE_ID = "package_id";
-        public static String[] COLUMNS = { ID, NAME, COORDINATES, PACKAGE_ID };
+        public static String[] COLUMNS = { ID, NAME, COORDINATES, TAGS, PACKAGE_ID };
     }
     
     public static final class Content {
@@ -93,6 +95,8 @@ public class DBAdapter {
     	public static String LOCATION_NAME = "location_name";
     	public static String VERSION = "version";
     	public static String COORDINATES = "coordinates";
+    	public static String TAGS = "tags";
+    	public static String[] COLUMNS = { PACKAGE_ID, PACKAGE_NAME, LOCATION_ID, LOCATION_NAME, VERSION, COORDINATES, TAGS };
     }
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
@@ -168,21 +172,10 @@ public class DBAdapter {
     
     public Cursor fetchLocationByName(String packageName, String locationName){
     	
-    	/*
-    	 * I think the following actually works out as being worse than
-    	 * doing a dirty direct sql query..
-    	 * 
-    	 * Cursor mCursor = mDb.query(innerJoin(Location.TABLE_NAME, Package.TABLE_NAME, Location.PACKAGE_ID, Package.ID), 
-    	 *		new String[] {Package.ID, Package.NAME, Package.VERSION, Location.ID, Location.NAME, Location.COORDINATES}, 
-    	 *		Location.NAME + "='" + locationName + "' AND " + Package.NAME + "='" + packageName + "'", 
-    	 *		null, null, null, null);
-    	 *		
-    	 */
-    	
     	Cursor mCursor = mDb.rawQuery("SELECT packages._id as package_id, "
     			+ "packages.name as package_name, packages.version, "
     			+ "locations._id as location_id, locations.name as location_name, "
-    			+ "locations.coordinates "
+    			+ "locations.coordinates, locations.tags "
     			+ "FROM locations INNER JOIN packages ON locations.package_id=packages._id "
     			+ "WHERE locations.name=? AND packages.name=?", 
     			new String[] {locationName, packageName});

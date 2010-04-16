@@ -18,7 +18,7 @@
   <PreferenceCategory android:title="@string/preferences_general_title">
     <CheckBoxPreference
         android:key="preferences_decode_1D"
-        android:defaultValue="true"
+        android:defaultValue="false"
         android:title="@string/preferences_decode_1D_title"/>
     <CheckBoxPreference
         android:key="preferences_decode_QR"

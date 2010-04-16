@@ -1,7 +1,13 @@
 package pt.fraunhofer.openlbs;
 
+import java.io.File;
+
 import pt.fraunhofer.openlbs.db.DBAdapter;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,6 +21,8 @@ import android.widget.AdapterView.OnItemClickListener;
 
 public class LocationActivity extends Activity {
     private static final String TAG = "OpenLBS LocationActivity";
+    
+    private static final int DIALOG_INVALID_QRCODE = 0;
     
 	private class Location {
 		public int _id;
@@ -45,11 +53,25 @@ public class LocationActivity extends Activity {
         
         myLocation = new Location();
         myPackage = new Package();
+        
+		/* 
+		 * Use the Uri class to parse the barcode scan result.
+		 * 
+         * If the result isn't an uri, this will return nothing, making result
+         * a null object. Hence, upon validation, we must predict a 
+         * NullPointerException happening. 
+         * 
+         */
+        
+        result = Uri.parse(getIntent().getExtras().getString(MainActivity.BARCODE_RESULT));
 		
-		// TODO: 0. validations
-        if(!validateUri(result)){
-        	// destroy activity and display a dialog saying it pooped
-        }
+		try {
+			if (!validateUri(result)) {
+				showDialog(DIALOG_INVALID_QRCODE);
+			}
+		} catch (NullPointerException e) {
+			showDialog(DIALOG_INVALID_QRCODE);
+		}
 		
 		try {
 			populateFields();
@@ -76,10 +98,20 @@ public class LocationActivity extends Activity {
 	 * 
 	 * @param result
 	 * @return
+	 * @throws Exception 
 	 */
 	
 	private boolean validateUri(Uri result) {
-		// TODO: Actually validate the URI
+		// TODO: Propperly validate the URI
+		
+		// Uri must belong to the lbs scheme
+		if(!result.getScheme().equals("lbs"))
+			return false;
+		
+		// Uri must have a path (location)
+		if(!(result.getPath().split("/").length < 1))
+			return false;
+		
 		return true;
 	}
 	
@@ -90,8 +122,6 @@ public class LocationActivity extends Activity {
 	 */
 	
 	private void populateFields() throws Exception {
-		result = Uri.parse(getIntent().getExtras().getString(MainActivity.BARCODE_RESULT));
-		
 		myPackage.name = result.getAuthority();
 		myLocation.name = result.getPath().split("/")[1];
 		
@@ -203,22 +233,56 @@ public class LocationActivity extends Activity {
 		contentList.setOnItemClickListener(new OnItemClickListener() {
 
 			public void onItemClick(AdapterView<?> l, View v, int position, long id) {
-				// TODO Auto-generated method stub
 				Cursor ccursor = mDBAdapter.fetchContentById(id);
 				startManagingCursor(ccursor);
 				
 				if(ccursor.moveToFirst() && (ccursor.getCount() == 1)){
-					/*
-					Log.v(TAG, "Content " + id + ", position " + position + " (" + ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.NAME)) 
-							+ ", " + ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.TYPE)) + ") clicked!");
-					Log.v(TAG, "Absolute path to data: " + getFilesDir().getAbsolutePath() + "/" + myPackage.name + "/" + myLocation.name + "/" + ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.PATH)));
-					*/
+					String filePath = getFilesDir().getAbsolutePath() + "/" 
+					+ myPackage.name + "/" + myLocation.name + "/" 
+					+ ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.PATH));
 					
+					String fileType = ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.TYPE));
 					
+					Log.v(TAG, "Content " + id + ", position " + position 
+							+ " (" + ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.NAME)) 
+							+ ", " + ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.TYPE)) 
+							+ ") clicked!");
+					Log.v(TAG, "Absolute path to data: " + filePath);
 					
+					Intent intent = new Intent();  
+					intent.setAction(android.content.Intent.ACTION_VIEW);
+					File file = new File(filePath);
+					boolean result = file.mkdirs();
+					
+					Log.v(TAG, "mkdirs(): " + result);
+					Log.v(TAG, "File URI: " + Uri.fromFile(file));
+					
+					intent.setDataAndType(Uri.fromFile(file), fileType);
+					startActivity(intent);
 				}
 			}
 			
 		});
+	}
+	
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		Dialog dialog;
+	    switch(id) {
+	    case DIALOG_INVALID_QRCODE:
+	    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+	    	builder.setMessage("Invalid QRCode read. You may want to try again.")
+	    	       .setCancelable(false)
+	    	       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+	    	           public void onClick(DialogInterface dialog, int id) {
+	    	                finish();
+	    	           }
+	    	       });
+	    	dialog = builder.create();
+	        break;
+	    default:
+	        dialog = null;
+	    }
+	    return dialog;
 	}
 }
