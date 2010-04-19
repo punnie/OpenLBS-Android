@@ -23,7 +23,7 @@ public class DBAdapter {
      */
 
     private static final String DATABASE_NAME = "openlbs.sqlite3";
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 24;
     
     /**
      * Redo this crap. It'll be nicer to fetch the statements to
@@ -228,7 +228,7 @@ public class DBAdapter {
         is.read(buffer);
         is.close();
         // Convert the buffer into a string.
-        return new String(buffer);
+        return new String(buffer, "ISO-8859-1");
       }
     
     private void populateDummyData(){

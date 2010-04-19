@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -104,13 +105,19 @@ public class LocationActivity extends Activity {
 	private boolean validateUri(Uri result) {
 		// TODO: Propperly validate the URI
 		
+		/*
+		Log.v(TAG, "URI schema: " + result.getScheme());
+		
 		// Uri must belong to the lbs scheme
 		if(!result.getScheme().equals("lbs"))
 			return false;
+
+		Log.v(TAG, "URI path: " + result.getPath().toString());
 		
 		// Uri must have a path (location)
 		if(!(result.getPath().split("/").length < 1))
 			return false;
+		*/
 		
 		return true;
 	}
@@ -185,8 +192,10 @@ public class LocationActivity extends Activity {
 		packageName.setText(packageIdentifier);
 		locationName.setText(myLocation.name);
 	
-		coordinates = "coordinates: " + myLocation.coordinates;
-		locationCoordinates.setText(coordinates);
+		if(myLocation.coordinates != null){
+			coordinates = "coordinates: " + myLocation.coordinates;
+			locationCoordinates.setText(coordinates);
+		}
 	}
 	
 	/**
@@ -237,7 +246,7 @@ public class LocationActivity extends Activity {
 				startManagingCursor(ccursor);
 				
 				if(ccursor.moveToFirst() && (ccursor.getCount() == 1)){
-					String filePath = getFilesDir().getAbsolutePath() + "/" 
+					String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" 
 					+ myPackage.name + "/" + myLocation.name + "/" 
 					+ ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.PATH));
 					
