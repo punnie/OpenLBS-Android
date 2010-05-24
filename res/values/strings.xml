@@ -25,6 +25,7 @@
   <string name="button_preferences">Preferences</string>
   <string name="button_done">Done</string>
   <string name="button_ok">OK</string>
+  <string name="button_install_package">Install</string>
 
   <string name="menu_settings">Settings</string>
 

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import pt.fraunhofer.openlbs.entities.Package;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 public class PackageListItemAdapter extends ArrayAdapter<Package> {
+	private static final String TAG = "PackageListItemAdapter";
 	
 	private ArrayList<Package> packages;
 	private Context context;
@@ -24,6 +26,7 @@ public class PackageListItemAdapter extends ArrayAdapter<Package> {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
+		Log.d(TAG, "Entered getView: " + position);
 		View v = convertView;
 		
 		if (v == null) {
@@ -34,8 +37,8 @@ public class PackageListItemAdapter extends ArrayAdapter<Package> {
 		Package p = packages.get(position);
 		
 		if (p != null) {
-			TextView packageName = (TextView) v.findViewById(R.id.packageName);
-			TextView packageVersion = (TextView) v.findViewById(R.id.packageVersion);
+			TextView packageName = (TextView) v.findViewById(R.id.listPackageName);
+			TextView packageVersion = (TextView) v.findViewById(R.id.listPackageVersion);
 			if (packageName != null) {
 				packageName.setText(p.getName());
 			}
