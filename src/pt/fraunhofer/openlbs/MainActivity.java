@@ -14,7 +14,7 @@ public class MainActivity extends Activity {
 	private static final int CAPTURED = 1;
 	private static final String TAG = "MainActivity";
 	private String result;
-	private Button capture;
+	private Button capture, packages, preferences;
 	
 	public static final String BARCODE_RESULT = "BarcodeResult";
 	
@@ -24,13 +24,23 @@ public class MainActivity extends Activity {
         setContentView(R.layout.main);
         
         capture = (Button) findViewById(R.id.Button01);
+        packages = (Button) findViewById(R.id.Button02);
+        preferences = (Button) findViewById(R.id.Button03);
         
         capture.setOnClickListener(new OnClickListener() {
 			
 			public void onClick(View v) {
 				Intent i = new Intent(getApplicationContext(), CaptureActivity.class);
 				startActivityForResult(i, CAPTURED);
-				}
+			}
+		});
+        
+        packages.setOnClickListener(new OnClickListener() {
+			
+			public void onClick(View v) {
+				Intent i = new Intent(getApplicationContext(), ListPackagesActivity.class);
+				startActivity(i);
+			}
 		});
     }
 
@@ -44,7 +54,7 @@ public class MainActivity extends Activity {
 			Bundle extras = new Bundle();
 			extras.putString(MainActivity.BARCODE_RESULT, result);
 			
-			Intent intent = new Intent(getApplicationContext(), LocationActivity.class);
+			Intent intent = new Intent(getApplicationContext(), ShowLocationActivity.class);
 			intent.putExtras(extras);
 			
 			startActivity(intent);

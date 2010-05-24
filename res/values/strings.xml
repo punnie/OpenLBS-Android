@@ -21,6 +21,8 @@
   <string name="button_back">Back</string>
   <string name="button_cancel">Cancel</string>
   <string name="button_capture">Capture</string>
+  <string name="button_packages">Packages</string>
+  <string name="button_preferences">Preferences</string>
   <string name="button_done">Done</string>
   <string name="button_ok">OK</string>
 

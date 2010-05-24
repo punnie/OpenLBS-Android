@@ -6,11 +6,12 @@
       
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     
     <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true">
-        <activity android:label="@string/app_name" android:name=".MainActivity">
+        <activity android:label="@string/app_name" android:screenOrientation="portrait" android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -18,9 +19,18 @@
         </activity>
 
         
-    <activity android:name="LocationActivity"></activity><activity android:screenOrientation="landscape" android:configChanges="orientation|keyboardHidden" android:theme="@android:style/Theme.NoTitleBar.Fullscreen" android:name=".zxing.CaptureActivity">
-        </activity>
-</application>
+    	<activity android:name="ShowLocationActivity" android:screenOrientation="portrait">
+    	</activity>
+    	
+    	<activity android:name="ListPackagesActivity" android:screenOrientation="portrait">
+    	</activity>
+    	
+    	<activity android:name="ShowPackageActivity" android:screenOrientation="portrait">
+    	</activity>
+    	
+    	<activity android:screenOrientation="landscape" android:configChanges="orientation|keyboardHidden" android:theme="@android:style/Theme.NoTitleBar.Fullscreen" android:name=".zxing.CaptureActivity">
+    	</activity>
+	</application>
 
     <uses-sdk android:minSdkVersion="3" />
 

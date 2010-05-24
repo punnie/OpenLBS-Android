@@ -20,7 +20,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
-public class LocationActivity extends Activity {
+public class ShowLocationActivity extends Activity {
     private static final String TAG = "OpenLBS LocationActivity";
     
     private static final int DIALOG_INVALID_QRCODE = 0;
