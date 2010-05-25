@@ -1,18 +1,21 @@
 package pt.fraunhofer.openlbs.entities;
 
-import java.util.ArrayList;
+import java.io.Serializable;
+import java.util.Vector;
 
-public class Package {
+public class Package implements Serializable {
+	private static final long serialVersionUID = -8775446713415610220L;
+	
 	private Integer id;
 	private String name;
 	private Integer version;
 	private String updated_at;
 	private String content_file_name;
 	private String content_file_size;
-	private ArrayList<Location> locations;
+	private Vector<Location> locations;
 	
 	public Package() {
-		locations = new ArrayList<Location>();
+		locations = new Vector<Location>();
 	}
 	
 	public Integer getId() {
@@ -63,11 +66,11 @@ public class Package {
 		content_file_size = contentFileSize;
 	}
 
-	public ArrayList<Location> getLocations() {
+	public Vector<Location> getLocations() {
 		return locations;
 	}
 
-	public void setLocations(ArrayList<Location> locations) {
+	public void setLocations(Vector<Location> locations) {
 		this.locations = locations;
 	}
 	

@@ -1,15 +1,18 @@
 package pt.fraunhofer.openlbs.entities;
 
-import java.util.ArrayList;
+import java.io.Serializable;
+import java.util.Vector;
 
-public class Location {
+public class Location implements Serializable {
+	private static final long serialVersionUID = -8405292098457422779L;
+	
 	private String name;
 	private String coordinates;
 	private String tags;
-	private ArrayList<Content> contents;
+	private Vector<Content> contents;
 	
 	public Location() {
-		contents = new ArrayList<Content>();
+		contents = new Vector<Content>();
 	}
 	
 	public String getName() {
@@ -36,11 +39,11 @@ public class Location {
 		this.tags = tags;
 	}
 	
-	public ArrayList<Content> getContents() {
+	public Vector<Content> getContents() {
 		return contents;
 	}
 	
-	public void setContents(ArrayList<Content> contents) {
+	public void setContents(Vector<Content> contents) {
 		this.contents = contents;
 	}
 	

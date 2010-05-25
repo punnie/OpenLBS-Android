@@ -7,11 +7,11 @@
 	<TextView android:id="@+id/listPackageName" xmlns:android="http://schemas.android.com/apk/res/android"
     	android:layout_width="wrap_content"
     	android:layout_height="wrap_content"
-    	android:textSize="14sp"/>
+    	android:textSize="16sp"/>
     	
 	<TextView android:id="@+id/listPackageVersion" xmlns:android="http://schemas.android.com/apk/res/android"
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
-	    android:textSize="10sp"/>
+	    android:textSize="12sp"/>
 	    
 </LinearLayout>

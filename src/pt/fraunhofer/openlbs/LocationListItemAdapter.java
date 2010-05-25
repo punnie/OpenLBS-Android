@@ -1,6 +1,6 @@
 package pt.fraunhofer.openlbs;
 
-import java.util.ArrayList;
+import java.util.Vector;
 
 import pt.fraunhofer.openlbs.entities.Location;
 import android.content.Context;
@@ -14,10 +14,10 @@ import android.widget.TextView;
 public class LocationListItemAdapter extends ArrayAdapter<Location> {
 	private static final String TAG = "LocationListItemAdapter";
 	
-	private ArrayList<Location> locations;
+	private Vector<Location> locations;
 	private Context context;
 
-	public LocationListItemAdapter(Context context, int textViewResourceId, ArrayList<Location> locations) {
+	public LocationListItemAdapter(Context context, int textViewResourceId, Vector<Location> locations) {
 		super(context, textViewResourceId, locations);
 		this.locations = locations;
 		this.context = context;

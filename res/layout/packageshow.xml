@@ -20,13 +20,13 @@
           android:textSize="12sp" />
           
 <Button android:text="@string/button_install_package" 
-        android:id="@+id/Button02" 
+        android:id="@+id/InstallButton" 
         android:layout_width="wrap_content" 
         android:layout_height="wrap_content"
         android:hapticFeedbackEnabled="true" android:textSize="12dp" />
           
 <ListView android:id="@+id/thisPackageLocations"
-          android:layout_width="wrap_content" 
+          android:layout_width="fill_parent" 
           android:layout_height="wrap_content" 
           android:layout_marginTop="15dp"/>
 

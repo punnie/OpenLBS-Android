@@ -28,6 +28,9 @@
     	<activity android:name="ShowPackageActivity" android:screenOrientation="portrait">
     	</activity>
     	
+    	<activity android:name="InstallPackageActivity" android:screenOrientation="portrait">
+    	</activity>
+    	
     	<activity android:screenOrientation="landscape" android:configChanges="orientation|keyboardHidden" android:theme="@android:style/Theme.NoTitleBar.Fullscreen" android:name=".zxing.CaptureActivity">
     	</activity>
 	</application>

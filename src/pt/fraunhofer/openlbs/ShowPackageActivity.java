@@ -2,6 +2,7 @@ package pt.fraunhofer.openlbs;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Vector;
 
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONArray;
@@ -18,10 +19,14 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -37,9 +42,11 @@ public class ShowPackageActivity extends Activity {
 	private static final int DIALOG_BAD_JSON = 1;
 	private static final int DIALOG_BAD_INTERNET = 2;
 	private static final int DIALOG_PACKAGE_ID = 3;
+	
+	private static final int REQUEST_INSTALL = 0;
 
 	private Package thisPackage;
-	private ArrayList<Location> locations;
+	private Vector<Location> locations;
 	private Integer thisPackageId;
 	private String thisPackageURL;
 	private ProgressDialog progressDialog;
@@ -160,7 +167,7 @@ public class ShowPackageActivity extends Activity {
 		setContentView(R.layout.packageshow);
 		
 		thisPackage = new Package();
-		locations = new ArrayList<Location>();
+		locations = new Vector<Location>();
 		thisPackageId = getIntent().getExtras().getInt(ListPackagesActivity.PACKAGE_ID);
 		thisPackageURL = URL.replace("#", thisPackageId.toString());
 		
@@ -176,6 +183,22 @@ public class ShowPackageActivity extends Activity {
 			progressDialog = ProgressDialog.show(this, "Fetching package data",
 					"Package information being fetched. Hold on a jiff...");
 			thread.start();
+			
+			Button installButton = (Button) findViewById(R.id.InstallButton);
+			installButton.setOnClickListener(new OnClickListener() {
+				
+				public void onClick(View v) {
+					Intent i = new Intent(getApplicationContext(), InstallPackageActivity.class);
+					Bundle b = new Bundle();
+					b.putSerializable("package", thisPackage);
+					i.putExtras(b);
+					
+					thisPackage = (Package) b.getSerializable("package");
+					
+					startActivityForResult(i, REQUEST_INSTALL);
+				}
+			});
+			
 		} else {
 			showDialog(DIALOG_NO_INTERNET);
 		}

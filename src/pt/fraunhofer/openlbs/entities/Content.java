@@ -1,6 +1,11 @@
 package pt.fraunhofer.openlbs.entities;
 
-public class Content {
+import java.io.Serializable;
+
+
+public class Content implements Serializable {
+	private static final long serialVersionUID = 3132864411035084381L;
+	
 	private String name;
 	private String tags;
 	private String path;

@@ -43,7 +43,7 @@ public class PackageListItemAdapter extends ArrayAdapter<Package> {
 				packageName.setText(p.getName());
 			}
 			if (packageVersion != null){
-				packageVersion.setText(p.getVersion().toString());
+				packageVersion.setText("Going on version " + p.getVersion().toString());
 			}
 		}
 		return v;
