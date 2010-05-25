@@ -50,7 +50,9 @@ public class InstallPackageActivity extends Activity {
 	private static final String UNZIP_INFORMATION_TYPE = "unzip_information_type";
 	private static final String UNZIP_COMPLETION_NOTIFICATION = "unzip_completion_notification";
 	
-	private static final String OUTPUT_FOLDER = "/sdcard/OpenLBS";
+	private static final String APP_BASE_DATA_FOLDER = "/sdcard/pt.fraunhofer.openlbs";
+	private static final String APP_TMP_DATA_FOLDER = APP_BASE_DATA_FOLDER + "/tmp";
+	private static final String APP_CONTENT_DATA_FOLDER = APP_BASE_DATA_FOLDER + "/contents";
 	
 	private static final String CONTENT_FILE_URL = "http://openlbs.projects.fraunhofer.pt/packages/#";
 	
@@ -83,8 +85,8 @@ public class InstallPackageActivity extends Activity {
 				//and connect!
 				urlConnection.connect();
 				
-				File SDCardRoot = Environment.getExternalStorageDirectory();
-				File tmpdir = new File(SDCardRoot, "tmp");
+				//File SDCardRoot = Environment.getExternalStorageDirectory();
+				File tmpdir = new File(APP_TMP_DATA_FOLDER);
 				
 				if(!tmpdir.isDirectory())
 					tmpdir.mkdirs();
@@ -171,7 +173,7 @@ public class InstallPackageActivity extends Activity {
 
 		public void run() {
 			
-			File oldContentDirectory = new File(OUTPUT_FOLDER + File.separator + thisPackage.getName());
+			File oldContentDirectory = new File(APP_CONTENT_DATA_FOLDER + File.separator + thisPackage.getName());
 			
 			if(oldContentDirectory.exists()){
 				Log.d(TAG, "Found old content: " + oldContentDirectory.toString() + ". Deleting!");
@@ -189,7 +191,7 @@ public class InstallPackageActivity extends Activity {
 					Log.d(TAG, "Extracting: " + entry);
 					
 					String fileName = entry.getName();
-					File newFile = new File(OUTPUT_FOLDER + File.separator + fileName);
+					File newFile = new File(APP_CONTENT_DATA_FOLDER + File.separator + fileName);
 					
 					// create directories as needed
 					new File(newFile.getParent()).mkdirs();
