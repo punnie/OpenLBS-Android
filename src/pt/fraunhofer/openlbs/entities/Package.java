@@ -6,6 +6,16 @@ import java.util.Vector;
 public class Package implements Serializable {
 	private static final long serialVersionUID = -8775446713415610220L;
 	
+	/**
+	 * DBAdapter stuff
+	 */
+	
+	public static String TABLE_NAME = "packages";
+    public static String ID = "_id";
+    public static String NAME = "name";
+    public static String VERSION = "version";
+    public static String[] COLUMNS = { ID, NAME, VERSION };
+	
 	private Integer id;
 	private String name;
 	private Integer version;

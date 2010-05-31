@@ -47,7 +47,6 @@ public class ShowPackageActivity extends Activity {
 
 	private Package thisPackage;
 	private Vector<Location> locations;
-	private Integer thisPackageId;
 	private String thisPackageURL;
 	private ProgressDialog progressDialog;
 	private LocationListItemAdapter locationListAdapter;
@@ -100,6 +99,7 @@ public class ShowPackageActivity extends Activity {
 						c.setName(((JSONObject)jsonContents.get(j)).getString("name"));
 						c.setPath(((JSONObject)jsonContents.get(j)).getString("path"));
 						c.setTags(((JSONObject)jsonContents.get(j)).getString("tags"));
+						c.setMimetype(((JSONObject)jsonContents.get(j)).getString("mimetype"));
 						
 						l.addContent(c);
 					}
@@ -168,8 +168,8 @@ public class ShowPackageActivity extends Activity {
 		
 		thisPackage = new Package();
 		locations = new Vector<Location>();
-		thisPackageId = getIntent().getExtras().getInt(ListPackagesActivity.PACKAGE_ID);
-		thisPackageURL = URL.replace("#", thisPackageId.toString());
+		thisPackage.setId(getIntent().getExtras().getInt(ListPackagesActivity.PACKAGE_ID));
+		thisPackageURL = URL.replace("#", thisPackage.getId().toString());
 		
 		locationListAdapter = new LocationListItemAdapter(this,
 				R.layout.packages_row, locations);
@@ -177,8 +177,6 @@ public class ShowPackageActivity extends Activity {
 		locationList.setAdapter(locationListAdapter);
 		
 		if (INETTools.hasInternet(this)) {
-			thisPackage = new Package();
-
 			Thread thread = new Thread(null, fetchList, "JSONFetch");
 			progressDialog = ProgressDialog.show(this, "Fetching package data",
 					"Package information being fetched. Hold on a jiff...");

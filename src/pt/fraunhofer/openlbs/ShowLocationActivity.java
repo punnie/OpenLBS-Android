@@ -2,7 +2,9 @@ package pt.fraunhofer.openlbs;
 
 import java.io.File;
 
+import pt.fraunhofer.openlbs.aux.Constants;
 import pt.fraunhofer.openlbs.db.DBAdapter;
+import pt.fraunhofer.openlbs.entities.Content;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -46,7 +48,9 @@ public class ShowLocationActivity extends Activity {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		Log.d(TAG, "Entered onCreate() state!");
 		super.onCreate(savedInstanceState);
+		
 		setContentView(R.layout.locationshow);
 		
         mDBAdapter = new DBAdapter(getBaseContext());
@@ -64,7 +68,12 @@ public class ShowLocationActivity extends Activity {
          * 
          */
         
-        result = Uri.parse(getIntent().getExtras().getString(MainActivity.BARCODE_RESULT));
+        if(result == null){
+        	Log.d(TAG, "Result is null!");
+        	result = Uri.parse(getIntent().getExtras().getString(MainActivity.BARCODE_RESULT));
+        } else {
+        	Log.d(TAG, "Result is NOT null!");
+        }
 		
 		try {
 			if (!validateUri(result)) {
@@ -79,6 +88,7 @@ public class ShowLocationActivity extends Activity {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			finish();
 		}
 		
 		// TODO: 2. fetch the location info from the database
@@ -94,6 +104,43 @@ public class ShowLocationActivity extends Activity {
 		
 	}
 	
+	@Override
+	protected void onRestart() {
+		Log.d(TAG, "Entered onRestart() state!");
+		super.onRestart();
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		Log.d(TAG, "Entered onSaveInstanceState() state!");
+		outState.putString("result", result.toString());		
+		
+		super.onSaveInstanceState(outState);
+	}
+
+	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		Log.d(TAG, "Entered onRestoreInstanceState() state!");
+		result = Uri.parse(savedInstanceState.getString("result"));
+		
+		super.onRestoreInstanceState(savedInstanceState);
+	}
+
+	@Override
+	protected void onPause() {
+		Log.d(TAG, "Entered onPause() state!");
+		super.onPause();
+	}
+
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub
+		Log.d(TAG, "Entered onStop() state!");
+		
+		mDBAdapter.close();
+		super.onStop();
+	}
+
 	/**
 	 * Validates a provided URI before sending it to be parsed.
 	 * 
@@ -103,22 +150,7 @@ public class ShowLocationActivity extends Activity {
 	 */
 	
 	private boolean validateUri(Uri result) {
-		// TODO: Propperly validate the URI
-		
-		/*
-		Log.v(TAG, "URI schema: " + result.getScheme());
-		
-		// Uri must belong to the lbs scheme
-		if(!result.getScheme().equals("lbs"))
-			return false;
-
-		Log.v(TAG, "URI path: " + result.getPath().toString());
-		
-		// Uri must have a path (location)
-		if(!(result.getPath().split("/").length < 1))
-			return false;
-		*/
-		
+	
 		return true;
 	}
 	
@@ -138,23 +170,6 @@ public class ShowLocationActivity extends Activity {
 		Cursor lcursor = mDBAdapter.fetchLocationByName(myPackage.name, myLocation.name);
 		startManagingCursor(lcursor);
 		
-		Log.v(TAG, "Location fetched!");
-		
-		/* 
-		 * Debug log garbage below.
-		 */
-		
-		Log.v(TAG, "package_id key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_ID));
-		Log.v(TAG, "package_name key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.PACKAGE_NAME));
-		Log.v(TAG, "location_id key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_ID));
-		Log.v(TAG, "location_name key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.LOCATION_NAME));
-		Log.v(TAG, "coordinates key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.COORDINATES));
-		Log.v(TAG, "version key index: " + lcursor.getColumnIndex(DBAdapter.JoinedLocation.VERSION));
-		
-		/*
-		 * End of debug log garbage.
-		 */
-		
 		if(lcursor.moveToFirst()){
 			checkDbLookupIntegrity(lcursor);
 			
@@ -165,6 +180,8 @@ public class ShowLocationActivity extends Activity {
 			myPackage.version = lcursor.getInt(lcursor.getColumnIndex(DBAdapter.JoinedLocation.VERSION));
 			
 			// TODO: check if fields are correctly filled.
+		} else {
+			throw new Exception();
 		}
 	}
 	
@@ -231,7 +248,7 @@ public class ShowLocationActivity extends Activity {
 		Cursor lcursor = mDBAdapter.fetchContentsByLocationId(myLocation._id);
 		startManagingCursor(lcursor);
 		
-		String[] from = new String[] {DBAdapter.Content.NAME, DBAdapter.Content.PATH};
+		String[] from = new String[] {Content.NAME, Content.PATH};
 		int[] to = new int[] {R.id.contentName, R.id.contentPath};
 		
 		SimpleCursorAdapter contents = new SimpleCursorAdapter(this, R.layout.contents_row, lcursor, from, to);
@@ -246,15 +263,15 @@ public class ShowLocationActivity extends Activity {
 				startManagingCursor(ccursor);
 				
 				if(ccursor.moveToFirst() && (ccursor.getCount() == 1)){
-					String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" 
+					String filePath = Constants.APP_CONTENT_DATA_FOLDER + "/" 
 					+ myPackage.name + "/" + myLocation.name + "/" 
-					+ ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.PATH));
+					+ ccursor.getString(ccursor.getColumnIndex(Content.PATH));
 					
-					String fileType = ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.TYPE));
+					String fileType = ccursor.getString(ccursor.getColumnIndex(Content.TYPE));
 					
 					Log.v(TAG, "Content " + id + ", position " + position 
-							+ " (" + ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.NAME)) 
-							+ ", " + ccursor.getString(ccursor.getColumnIndex(DBAdapter.Content.TYPE)) 
+							+ " (" + ccursor.getString(ccursor.getColumnIndex(Content.NAME)) 
+							+ ", " + ccursor.getString(ccursor.getColumnIndex(Content.TYPE)) 
 							+ ") clicked!");
 					Log.v(TAG, "Absolute path to data: " + filePath);
 					
@@ -263,7 +280,6 @@ public class ShowLocationActivity extends Activity {
 					File file = new File(filePath);
 					boolean result = file.mkdirs();
 					
-					Log.v(TAG, "mkdirs(): " + result);
 					Log.v(TAG, "File URI: " + Uri.fromFile(file));
 					
 					intent.setDataAndType(Uri.fromFile(file), fileType);
