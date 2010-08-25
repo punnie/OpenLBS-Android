@@ -137,7 +137,7 @@ public class ShowLocationActivity extends Activity {
 		// TODO Auto-generated method stub
 		Log.d(TAG, "Entered onStop() state!");
 		
-		mDBAdapter.close();
+		//mDBAdapter.close();
 		super.onStop();
 	}
 

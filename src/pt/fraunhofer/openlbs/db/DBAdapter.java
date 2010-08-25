@@ -24,7 +24,7 @@ public class DBAdapter {
      */
 
     private static final String DATABASE_NAME = "openlbs.sqlite3";
-    private static final int DATABASE_VERSION = 28;
+    private static final int DATABASE_VERSION = 29;
     
     /**
      * Redo this crap. It'll be nicer to fetch the statements to

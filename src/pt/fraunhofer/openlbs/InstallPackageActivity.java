@@ -43,8 +43,9 @@ public class InstallPackageActivity extends Activity {
 
 	private static final String UNZIP_INFORMATION_TYPE = "unzip_information_type";
 	private static final String UNZIP_COMPLETION_NOTIFICATION = "unzip_completion_notification";
+	private static final String UNDATA_COMPLETION_NOTIFICATION = "undata_completion_notification";
 
-	private static final String CONTENT_FILE_URL = "http://openlbs.projects.fraunhofer.pt/packages/#";
+	private static final String CONTENT_FILE_URL = Constants.OPENLBS_BASE_URL + "/packages/#";
 
 	private static final int PROGRESS_DIALOG_REFRESH_RATE = 1024;
 	private static final int BUFFER_SIZE = 1024;
@@ -56,6 +57,8 @@ public class InstallPackageActivity extends Activity {
 	private File tempFile;
 
 	private Runnable fetchContent = new Runnable() {
+		
+		private boolean terminate = false;
 
 		public void run() {
 			Message msg = downloadHandler.obtainMessage();
@@ -114,6 +117,10 @@ public class InstallPackageActivity extends Activity {
 				int refreshTicker = 0;
 
 				while ((bufferLength = inputStream.read(buffer)) > 0) {
+					
+					if(terminate)
+						return;
+					
 					// add the data in the buffer to the file in the file output
 					// stream (the file on the sd card
 					fileOutput.write(buffer, 0, bufferLength);
@@ -161,7 +168,7 @@ public class InstallPackageActivity extends Activity {
 			}
 
 		}
-
+		
 	};
 
 	private Runnable unzipContents = new Runnable() {
@@ -214,12 +221,12 @@ public class InstallPackageActivity extends Activity {
 
 				Log.d(TAG, "And we are done with the unzipping.");
 
-				Message msgf = unzipHandler.obtainMessage();
+				Message msgf = unholyHandler.obtainMessage();
 				Bundle bf = new Bundle();
 				bf.putString(UNZIP_INFORMATION_TYPE,
 						UNZIP_COMPLETION_NOTIFICATION);
 				msgf.setData(bf);
-				unzipHandler.sendMessage(msgf);
+				unholyHandler.sendMessage(msgf);
 
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -261,6 +268,13 @@ public class InstallPackageActivity extends Activity {
 			addToDatabase(mDb);
 			
 			mDb.close();
+			
+			Message msgf = unholyHandler.obtainMessage();
+			Bundle bf = new Bundle();
+			bf.putString(UNZIP_INFORMATION_TYPE,
+					UNDATA_COMPLETION_NOTIFICATION);
+			msgf.setData(bf);
+			unholyHandler.sendMessage(msgf);
 		}
 
 		private void findAndDelete(DBAdapter mDb) {
@@ -308,7 +322,7 @@ public class InstallPackageActivity extends Activity {
 
 	};
 
-	final Handler unzipHandler = new Handler() {
+	final Handler unholyHandler = new Handler() {
 
 		@Override
 		public void handleMessage(Message msg) {
@@ -322,6 +336,13 @@ public class InstallPackageActivity extends Activity {
 						"DatabaseUpdate");
 				databaseThread.start();
 			}
+			
+			if (messageType.equals(UNDATA_COMPLETION_NOTIFICATION)) {
+				unzipDialog.dismiss();
+				
+				finish();
+			}
+			
 		}
 
 	};
@@ -349,6 +370,13 @@ public class InstallPackageActivity extends Activity {
 		} else {
 			showDialog(DIALOG_NO_INTERNET);
 		}
+	}
+
+	@Override
+	protected void onStop() {
+		Log.d(TAG, "Stopping the install tag.");
+		
+		super.onStop();
 	}
 
 	@Override

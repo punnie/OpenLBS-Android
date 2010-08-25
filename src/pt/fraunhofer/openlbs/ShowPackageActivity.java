@@ -1,7 +1,6 @@
 package pt.fraunhofer.openlbs;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Vector;
 
 import org.apache.http.client.ClientProtocolException;
@@ -9,8 +8,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import pt.fraunhofer.openlbs.aux.Constants;
 import pt.fraunhofer.openlbs.aux.INETTools;
 import pt.fraunhofer.openlbs.aux.JSONFetcher;
+import pt.fraunhofer.openlbs.db.DBAdapter;
 import pt.fraunhofer.openlbs.entities.Content;
 import pt.fraunhofer.openlbs.entities.Location;
 import pt.fraunhofer.openlbs.entities.Package;
@@ -32,7 +33,7 @@ import android.widget.TextView;
 
 public class ShowPackageActivity extends Activity {
 	private static final String TAG = "ShowPackagesActivity";
-	private static final String URL = "http://openlbs.projects.fraunhofer.pt/packages/#.json";
+	private static final String URL = Constants.OPENLBS_BASE_URL + "/packages/#.json";
 
 	private static final int THREAD_SUCCESS = 0;
 	private static final int THREAD_BAD_JSON = 1;
@@ -106,8 +107,23 @@ public class ShowPackageActivity extends Activity {
 					
 					locations.add(l);
 				}
-				
+
 				thisPackage.setLocations(locations);
+
+				/*
+				
+				DBAdapter mDb = new DBAdapter(getBaseContext());
+				mDb.open();
+
+				Button installButton = (Button) findViewById(R.id.InstallButton);
+
+				if (mDb.exists(thisPackage) > 0) {
+					installButton.setVisibility(View.GONE);
+				}
+
+				mDb.close();
+				
+				*/
 				
 			} catch (JSONException e) {
 				// do something about this

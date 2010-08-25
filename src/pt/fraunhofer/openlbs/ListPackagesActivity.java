@@ -7,6 +7,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import pt.fraunhofer.openlbs.aux.Constants;
 import pt.fraunhofer.openlbs.aux.INETTools;
 import pt.fraunhofer.openlbs.aux.JSONFetcher;
 import pt.fraunhofer.openlbs.entities.Package;
@@ -27,7 +28,7 @@ import android.widget.AdapterView.OnItemClickListener;
 
 public class ListPackagesActivity extends Activity {
 	private static final String TAG = "ListPackagesActivity";
-	private static final String URL = "http://openlbs.projects.fraunhofer.pt/packages.json";
+	private static final String URL = Constants.OPENLBS_BASE_URL + "/packages.json";
 	
 	private static final int THREAD_SUCCESS = 0;
 	private static final int THREAD_BAD_JSON = 1;
